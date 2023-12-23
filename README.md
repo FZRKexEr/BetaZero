@@ -1,3 +1,9 @@
-# 蒙特卡洛树搜索
+# Othello AI
 
+### Completed
 
+- Pure Monte Carlo Tree Search 
+
+### To Do
+
+- CNN + MCTS
