@@ -86,7 +86,7 @@ public:
         // 没有选择，停一手
         node.pass();
         path.emplace_back(node.hash, node.o);
-      } else if ((expand.empty() || (seed() & 1)) && !select.empty()) {
+      } else if (expand.empty()) {
         // uct 下一层
         sort(select.begin(), select.end(), [&](auto &i, auto &j) {
           return uct(node.hash, i[2]) < uct(node.hash, j[2]);
