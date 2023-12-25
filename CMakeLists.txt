@@ -11,4 +11,5 @@ add_executable(BetaZero src/main.cpp
         src/Othello.cpp
         src/Othello.h
         src/MCTS.h
+        src/MCTS_Next.h
 )

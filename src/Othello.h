@@ -16,7 +16,7 @@ public:
   Othello(int n);
 
   // 翻转棋盘，返回需要翻转的位置
-  vector<array<int, 2>> flip_once(vector<vector<int>> temp, int x, int y);
+  vector<array<int, 2>> flip_once(int color, int x, int y);
 
   // 尝试落子, 返回落子后的 hash 值，如果落子失败，返回 -1
   long long try_play(int x, int y);

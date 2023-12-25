@@ -1,6 +1,7 @@
 #include "Tictac.h"
 #include "Othello.h"
 #include "MCTS.h"
+#include "MCTS_Next.h"
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -9,7 +10,10 @@ using Chess = Othello;
 class Human {
 public:
   int search_nums;
-  Human() : search_nums(0) {}
+  double select_time, move_time;
+  double win_per, draw_per;
+
+  Human() : search_nums(0), select_time(0), move_time(0), win_per(0), draw_per(0) {}
 
   // 返回一个 x, y 合法的位置, 但不保证按照棋类的规则可以落子。
   array<int, 2> play(const Chess& game) {
@@ -23,21 +27,26 @@ public:
   }
 };
 
-void self_play() {
+// 判断类型是否是 Human
+template <typename T>
+struct IsHuman : std::is_same<T, Human> {};
+
+template <typename T0, typename T1>
+int play_once(T0 player0, T1 player1, bool display) {
   Chess game(8);
   while (game.end() == -1) {
-    game.display();
-
-    MCTS<Chess> player0;
-    MCTS<Chess> player1;
-
+    if (display) game.display();
     array<int, 2> res = game.o ? player1.play(game) : player0.play(game);
-    cout << endl;
-    cout << "获胜概率: " << (game.o ? player1.win_per: player0.win_per) * 100 << "%" << endl;
-    cout << "平局概率: " << (game.o ? player1.draw_per: player0.draw_per) * 100 << "%" <<  endl;
-    cout << "搜索量: " << (game.o ? player1.search_nums : player0.search_nums) << endl;
-    cout << "Select+Expand 用时: " << (game.o ? player1.select_time: player0.select_time) << endl;
-    cout << "Quick Move 用时: " << (game.o ? player1.move_time: player0.move_time) << endl;
+
+    if (display) {
+      cout << endl;
+      cout << "落子 " << (char)(res[1] + 'A') << res[0] + 1 << endl;
+      cout << "获胜概率: " << (game.o ? player1.win_per : player0.win_per) * 100 << "%" << endl;
+      cout << "平局概率: " << (game.o ? player1.draw_per : player0.draw_per) * 100 << "%" << endl;
+      cout << "搜索量: " << (game.o ? player1.search_nums : player0.search_nums) << endl;
+      cout << "Select+Expand 用时: " << (game.o ? player1.select_time : player0.select_time) << endl;
+      cout << "Quick Move 用时: " << (game.o ? player1.move_time : player0.move_time) << endl;
+    }
 
     // 判断人类是否输入的 (x, y) 不合法, 输入不合法 (x, y) 默认为停一手
     if (res[0] == -1 && res[1] == -1) {
@@ -48,19 +57,42 @@ void self_play() {
     if (game.try_play(res[0], res[1]) != -1) {
       game.play(res[0], res[1]);
     } else {
-      cout << "不能落在这里" << endl;
+      cerr << "Error: 不能落在这里" << endl;
     }
   }
-  game.display();
+  if (display) game.display();
+  return game.end();
+}
 
-  if (game.end() == 2) cout << "和棋" << endl;
-  if (game.end() == 1) cout << "x 胜利" << endl;
-  if (game.end() == 0) cout << "o 胜利" << endl;
+// 对弈 cnt 次, 每次思考时间，搜索数量上限，是否展示棋局
+
+void test(int cnt, double time_limit, int search_limit, bool display) {
+  int cnt_mcts = 0, cnt_next = 0;
+  int cnt_draw = 0;
+  for (int i = 1; i <= cnt; i++) {
+    cout << "正在进行第 " << i << " 场对弈" << endl;
+
+    MCTS<Chess> mcts(time_limit, search_limit);
+    MCTS_Next<Chess> mcts_next(time_limit, search_limit);
+
+    int res = play_once(mcts, mcts_next, display);
+    if (res == 2) cout << "和棋" << endl, cnt_draw++;
+    if (res == 1) cout << "mcts_next 执黑胜" << endl, cnt_next++;
+    if (res == 0) cout << "mcts 执白胜" << endl, cnt_mcts++;
+
+    res = play_once(mcts_next, mcts, display);
+    if (res == 2) cout << "和棋" << endl, cnt_draw++;
+    if (res == 1) cout << "mcts 执黑胜" << endl, cnt_mcts++;
+    if (res == 0) cout << "mcts_next 执白胜" << endl, cnt_next++;
+  }
+  cout << "mcts:mcts_next = " << cnt_mcts << ":" << cnt_next << endl;
 }
 
 int main() {
-
-  self_play();
+  Human hm;
+  MCTS_Next<Chess> mcts_next(1, 100000);
+  //int res = play_once(hm, mcts_next, true);
+  test(10, 0.1, 100000, false);
 
   return 0;
 }

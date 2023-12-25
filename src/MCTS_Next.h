@@ -1,9 +1,10 @@
 //
-// Created by LiZnB on 2023/12/23.
+// Created by LiZnB on 2023/12/25.
 //
 
-#ifndef BETAZERO_MCTS_H
-#define BETAZERO_MCTS_H
+#ifndef BETAZERO_MCTS_NEXT_H
+#define BETAZERO_MCTS_NEXT_H
+
 
 #include <bits/stdc++.h>
 #include <bits/extc++.h>
@@ -11,13 +12,13 @@ using namespace std;
 using namespace __gnu_pbds;
 
 template <typename Chess>
-class MCTS {
+class MCTS_Next {
 private:
   mt19937 seed;
   long long CLK;
   int Search_Times = 100000; // 对弈到终局的次数
-  const double Confidence = 0.9; // 值越大，越偏向探索。
-  double Time_Limit = 1.5; // 每一步时间限制
+  const double Confidence = 0.1; // 值越大，越偏向探索。
+  double Time_Limit = 1.5; // 每一步时间限制 1s
 
 public:
   gp_hash_table<long long, int> vis, win;
@@ -26,7 +27,7 @@ public:
   double win_per, draw_per;
 
   // 初始化
-  MCTS(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
+  MCTS_Next(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
     win_per = -1.0;
     draw_per = -1.0;
     search_nums = 0;
@@ -36,7 +37,7 @@ public:
     seed = mt19937(rd());
   };
 
-  // uct: son.win / son.vis + sqrt(c * log(fa.vis) / son.vis)
+  // uct: son.win(father win or draw) / son.vis + sqrt(c * log(fa.vis) / son.vis)
   double uct(long long u, long long v) {
     // win[v] 表示儿子胜利，儿子没胜利表示父亲平局或者胜利。这里需要的是父亲的平局或者胜利。
     int v_win = vis[v] - win[v];
@@ -73,6 +74,7 @@ public:
 
     while (node.end() == -1) {
       vector<array<long long, 3>> select, expand;
+
       for (int i = 0; i < node.size; i++) {
         for (int j = 0; j < node.size; j++) {
           long long v = node.try_play(i, j);
@@ -85,7 +87,7 @@ public:
         // 没有选择，停一手
         node.pass();
         path.emplace_back(node.hash, node.o);
-      } else if (expand.empty() || (seed() % 2 && !select.empty())) {
+      } else if (expand.empty()) {
         // uct 下一层
         sort(select.begin(), select.end(), [&](auto &i, auto &j) {
           return uct(node.hash, i[2]) < uct(node.hash, j[2]);
@@ -150,4 +152,6 @@ public:
   }
 };
 
-#endif //BETAZERO_MCTS_H
+
+
+#endif //BETAZERO_MCTS_NEXT_H
