@@ -1,10 +1,10 @@
 //
 // Created by LiZnB on 2023/12/25.
 //
+// 相比版本 1, 调整 Confidence, UCT 策略更保守。比分大约 1:10
 
-#ifndef BETAZERO_MCTS_NEXT_H
-#define BETAZERO_MCTS_NEXT_H
-
+#ifndef BETAZERO_MCTS_2_H
+#define BETAZERO_MCTS_2_H
 
 #include <bits/stdc++.h>
 #include <bits/extc++.h>
@@ -12,7 +12,7 @@ using namespace std;
 using namespace __gnu_pbds;
 
 template <typename Chess>
-class MCTS_Next {
+class MCTS_2{
 private:
   mt19937 seed;
   long long CLK;
@@ -27,7 +27,7 @@ public:
   double win_per, draw_per;
 
   // 初始化
-  MCTS_Next(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
+  MCTS_2(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
     win_per = -1.0;
     draw_per = -1.0;
     search_nums = 0;
@@ -150,8 +150,25 @@ public:
 
     return (array<int, 2>) {(int)x, (int)y};
   }
+
+  // 在初始状态进行一次搜索，计算每秒搜索的结局个数
+  double benchmark() {
+    Chess game;
+    double T_backup = Time_Limit;
+    int S_backup = Search_Times;
+    Time_Limit = 1000000;
+    Search_Times = 1000; // 搜到1000个结局终止
+    play(game);
+    double res = search_nums * 1.0 / (select_time + move_time);
+    Time_Limit = T_backup;
+    Search_Times = S_backup;
+    vis.clear();
+    win.clear();
+    search_nums = 0;
+    select_time = 0;
+    move_time = 0;
+    return res;
+  }
 };
 
-
-
-#endif //BETAZERO_MCTS_NEXT_H
+#endif //BETAZERO_MCTS_2_H

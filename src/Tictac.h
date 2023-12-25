@@ -10,7 +10,7 @@
 // 3 * 3 tictac
 class Tictac : public chess {
 public:
-  Tictac(int n);
+  Tictac();
 
   // 尝试在 (x, y) 落子(不会修改棋盘)，如果落子成功，返回新的棋盘的 hash, 否则返回 -1
   long long try_play(int x, int y);

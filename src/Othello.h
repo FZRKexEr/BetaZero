@@ -14,6 +14,8 @@ private:
 public:
   // 初始化开局
   Othello(int n);
+  // 默认 8 * 8
+  Othello();
 
   // 翻转棋盘，返回需要翻转的位置
   vector<array<int, 2>> flip_once(int color, int x, int y);

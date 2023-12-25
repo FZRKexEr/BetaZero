@@ -1,7 +1,7 @@
 #include "Tictac.h"
 #include "Othello.h"
-#include "MCTS.h"
-#include "MCTS_Next.h"
+#include "MCTS_1.h"
+#include "MCTS_2.h"
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -33,7 +33,7 @@ struct IsHuman : std::is_same<T, Human> {};
 
 template <typename T0, typename T1>
 int play_once(T0 player0, T1 player1, bool display) {
-  Chess game(8);
+  Chess game;
   while (game.end() == -1) {
     if (display) game.display();
     array<int, 2> res = game.o ? player1.play(game) : player0.play(game);
@@ -72,8 +72,8 @@ void test(int cnt, double time_limit, int search_limit, bool display) {
   for (int i = 1; i <= cnt; i++) {
     cout << "正在进行第 " << i << " 场对弈" << endl;
 
-    MCTS<Chess> mcts(time_limit, search_limit);
-    MCTS_Next<Chess> mcts_next(time_limit, search_limit);
+    MCTS_1<Chess> mcts(time_limit, search_limit);
+    MCTS_2<Chess> mcts_next(time_limit, search_limit);
 
     int res = play_once(mcts, mcts_next, display);
     if (res == 2) cout << "和棋" << endl, cnt_draw++;
@@ -89,9 +89,17 @@ void test(int cnt, double time_limit, int search_limit, bool display) {
 }
 
 int main() {
-  Human hm;
-  MCTS_Next<Chess> mcts_next(1, 100000);
-  //int res = play_once(hm, mcts_next, true);
+  MCTS_1<Chess> mcts_1(1, 100000);
+  MCTS_2<Chess> mcts_2(1, 100000);
+
+  cout << "mcts_1 benchmark: " << mcts_1.benchmark() << " endings per second" << endl;
+  cout << "mcts_2 benchmark: " << mcts_2.benchmark() << " endings per second" << endl;
+
+  // human vs mcts_next
+  // Human hm;
+  // int res = play_once(hm, mcts_next, true);
+
+  // mcts vs mcts_next
   test(10, 0.1, 100000, false);
 
   return 0;

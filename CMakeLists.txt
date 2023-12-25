@@ -10,6 +10,7 @@ add_executable(BetaZero src/main.cpp
         src/Tictac.h
         src/Othello.cpp
         src/Othello.h
-        src/MCTS.h
-        src/MCTS_Next.h
+        src/MCTS_1.h
+        src/MCTS_2.h
+        src/MCTS_2_vector.h
 )

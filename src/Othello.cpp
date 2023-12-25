@@ -15,6 +15,17 @@ Othello::Othello(int n) : chess(n) {
   hash ^= zobrist[size / 2][size / 2][0];
 };
 
+Othello::Othello() : chess(8) {
+  board[(size - 1) / 2][(size - 1) / 2] = 0;
+  board[(size - 1) / 2][size / 2] = 1;
+  board[size / 2][(size - 1) / 2] = 1;
+  board[size / 2][size / 2] = 0;
+  hash ^= zobrist[(size - 1) / 2][(size - 1) / 2][0];
+  hash ^= zobrist[(size - 1) / 2][size / 2][1];
+  hash ^= zobrist[size / 2][(size - 1) / 2][1];
+  hash ^= zobrist[size / 2][size / 2][0];
+}
+
 vector<array<int, 2>> Othello::flip_once(int color, int x, int y) {
   vector<array<int, 2>> res;
   for (int i = 0; i < 8; i++) {

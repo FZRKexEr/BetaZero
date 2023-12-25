@@ -4,7 +4,7 @@
 
 #include "Tictac.h"
 
-Tictac::Tictac(int n) : chess(3) {}
+Tictac::Tictac() : chess(3) {}
 
 long long Tictac::try_play(int x, int y) {
   if (board[x][y] != -1) return -1;
