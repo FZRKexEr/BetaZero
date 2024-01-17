@@ -1,7 +1,6 @@
 #include "Tictac.h"
 #include "Othello.h"
-#include "MCTS_1.h"
-#include "MCTS_2.h"
+#include "MCTS.h"
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -72,35 +71,25 @@ void test(int cnt, double time_limit, int search_limit, bool display) {
   for (int i = 1; i <= cnt; i++) {
     cout << "正在进行第 " << i << " 场对弈" << endl;
 
-    MCTS_1<Chess> mcts(time_limit, search_limit);
-    MCTS_2<Chess> mcts_next(time_limit, search_limit);
+    MCTS<Chess> player0(time_limit, search_limit);
+    MCTS<Chess> player1(time_limit, search_limit);
 
-    int res = play_once(mcts, mcts_next, display);
+    int res = play_once(player1, player0, display);
     if (res == 2) cout << "和棋" << endl, cnt_draw++;
-    if (res == 1) cout << "mcts_next 执黑胜" << endl, cnt_next++;
-    if (res == 0) cout << "mcts 执白胜" << endl, cnt_mcts++;
+    if (res == 1) cout << "player0 执黑胜" << endl, cnt_next++;
+    if (res == 0) cout << "player1 执白胜" << endl, cnt_mcts++;
 
-    res = play_once(mcts_next, mcts, display);
+    res = play_once(player0, player1, display);
     if (res == 2) cout << "和棋" << endl, cnt_draw++;
-    if (res == 1) cout << "mcts 执黑胜" << endl, cnt_mcts++;
-    if (res == 0) cout << "mcts_next 执白胜" << endl, cnt_next++;
+    if (res == 1) cout << "player1 执黑胜" << endl, cnt_mcts++;
+    if (res == 0) cout << "player0 执白胜" << endl, cnt_next++;
   }
   cout << "mcts:mcts_next = " << cnt_mcts << ":" << cnt_next << endl;
 }
 
 int main() {
-  MCTS_1<Chess> mcts_1(1, 100000);
-  MCTS_2<Chess> mcts_2(1, 100000);
 
-  cout << "mcts_1 benchmark: " << mcts_1.benchmark() << " endings per second" << endl;
-  cout << "mcts_2 benchmark: " << mcts_2.benchmark() << " endings per second" << endl;
-
-  // human vs mcts_next
-  // Human hm;
-  // int res = play_once(hm, mcts_next, true);
-
-  // mcts vs mcts_next
-  test(10, 0.1, 100000, false);
+  test(5, 1, 100000, true);
 
   return 0;
 }

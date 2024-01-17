@@ -3,8 +3,8 @@
 //
 // 相比版本 1, 调整 Confidence, UCT 策略更保守。比分大约 1:10
 
-#ifndef BETAZERO_MCTS_2_H
-#define BETAZERO_MCTS_2_H
+#ifndef BETAZERO_MCTS_H
+#define BETAZERO_MCTS_H
 
 #include <bits/stdc++.h>
 #include <bits/extc++.h>
@@ -12,7 +12,7 @@ using namespace std;
 using namespace __gnu_pbds;
 
 template <typename Chess>
-class MCTS_2{
+class MCTS{
 private:
   mt19937 seed;
   long long CLK;
@@ -27,7 +27,13 @@ public:
   double win_per, draw_per;
 
   // 初始化
-  MCTS_2(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
+  MCTS(double time_limit, int search_limit) : Time_Limit(time_limit), Search_Times(search_limit) {
+    init();
+  };
+
+  void init() {
+    vis.clear();
+    win.clear();
     win_per = -1.0;
     draw_per = -1.0;
     search_nums = 0;
@@ -35,7 +41,7 @@ public:
     move_time = 0.0;
     random_device rd;
     seed = mt19937(rd());
-  };
+  }
 
   // uct: son.win(father win or draw) / son.vis + sqrt(c * log(fa.vis) / son.vis)
   double uct(long long u, long long v) {
@@ -60,7 +66,7 @@ public:
       node.pass();
       return quick_move(node);
     }
-    uniform_int_distribution<int> R(0, expand.size() - 1);
+    uniform_int_distribution<int> R(0, (int) expand.size() - 1);
     auto [x, y, v] = expand[R(seed)];
     node.play(x, y);
     return quick_move(node);
@@ -109,6 +115,7 @@ public:
 
   // 分析一个局面，走 Search_Times 次到终局，选出最优选择
   array<int, 2> play(Chess game) {
+    init();
     assert(game.end() == -1);
     CLK = clock();
     for (search_nums = 1; search_nums <= Search_Times; search_nums++) {
@@ -162,13 +169,8 @@ public:
     double res = search_nums * 1.0 / (select_time + move_time);
     Time_Limit = T_backup;
     Search_Times = S_backup;
-    vis.clear();
-    win.clear();
-    search_nums = 0;
-    select_time = 0;
-    move_time = 0;
     return res;
   }
 };
 
-#endif //BETAZERO_MCTS_2_H
+#endif //BETAZERO_MCTS_H
