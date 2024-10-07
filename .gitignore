@@ -3,3 +3,4 @@
 /.idea/
 /venv/
 /build/
+/python/__pycache__/
