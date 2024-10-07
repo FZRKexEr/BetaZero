@@ -75,7 +75,7 @@ class Othello:
 
     # 不包含对称信息的 hash
     def hash_old(self):
-        hash_value = mmh3.hash(self.board, signed=False)
+        hash_value = mmh3.hash(self.board.tobytes(), signed=False)
         if self.o == 1:
             return hash_value ^ self.o_hash
         else:

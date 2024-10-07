@@ -92,10 +92,12 @@ int main() {
 
   MCTS<Chess> bench(1, 100000);
   cout << bench.benchmark() << endl;
+
+  test(1, 1, 100000, true);
+
   return 0;
 
 
-  test(5, 1, 100000, true);
 
   return 0;
 }

@@ -116,7 +116,7 @@ class MCTS2:
         node = copy.deepcopy(node)
 
         self.running = True
-        timer = threading.Timer(1, self.stop_search)  # 计时线程
+        timer = threading.Timer(2, self.stop_search)  # 计时线程
         timer.start()
         while self.running:
             self.search(node)
