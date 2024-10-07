@@ -89,6 +89,12 @@ void test(int cnt, double time_limit, int search_limit, bool display) {
 
 int main() {
 
+
+  MCTS<Chess> bench(1, 100000);
+  cout << bench.benchmark() << endl;
+  return 0;
+
+
   test(5, 1, 100000, true);
 
   return 0;

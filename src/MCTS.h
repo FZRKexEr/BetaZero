@@ -18,7 +18,7 @@ private:
   long long CLK;
   int Search_Times = 100000; // 对弈到终局的次数
   const double Confidence = 0.1; // 值越大，越偏向探索。
-  double Time_Limit = 1.5; // 每一步时间限制 1s
+  double Time_Limit = 1.0; // 每一步时间限制 1s
 
 public:
   gp_hash_table<long long, int> vis, win;
