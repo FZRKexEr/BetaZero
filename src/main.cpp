@@ -1,103 +1,122 @@
-#include "Tictac.h"
-#include "Othello.h"
-#include "MCTS.h"
-#include <bits/stdc++.h>
-using namespace std;
+#include <iostream>
+#include <string>
+#include <filesystem>
+#include "Othello.hpp"
+#include "SelfPlay.hpp"
+#include "NeuralNetwork.hpp"
+#include "ModelEvaluator.hpp"
 
-using Chess = Othello;
-
-class Human {
-public:
-  int search_nums;
-  double select_time, move_time;
-  double win_per, draw_per;
-
-  Human() : search_nums(0), select_time(0), move_time(0), win_per(0), draw_per(0) {}
-
-  // 返回一个 x, y 合法的位置, 但不保证按照棋类的规则可以落子。
-  array<int, 2> play(const Chess& game) {
-    string pos; cin >> pos;
-    if (!isupper(pos[0])) return {-1, -1};
-    if (!isdigit(pos[1])) return {-1, -1};
-    array<int, 2> res{pos[1] - '0' - 1, pos[0] - 'A'};
-    if (res[0] >= game.size) return {-1, -1};
-    if (res[1] >= game.size) return {-1, -1};
-    return res;
-  }
-};
-
-// 判断类型是否是 Human
-template <typename T>
-struct IsHuman : std::is_same<T, Human> {};
-
-template <typename T0, typename T1>
-int play_once(T0 player0, T1 player1, bool display) {
-  Chess game;
-  while (game.end() == -1) {
-    if (display) game.display();
-    array<int, 2> res = game.o ? player1.play(game) : player0.play(game);
-
-    if (display) {
-      cout << endl;
-      cout << "落子 " << (char)(res[1] + 'A') << res[0] + 1 << endl;
-      cout << "获胜概率: " << (game.o ? player1.win_per : player0.win_per) * 100 << "%" << endl;
-      cout << "平局概率: " << (game.o ? player1.draw_per : player0.draw_per) * 100 << "%" << endl;
-      cout << "搜索量: " << (game.o ? player1.search_nums : player0.search_nums) << endl;
-      cout << "Select+Expand 用时: " << (game.o ? player1.select_time : player0.select_time) << endl;
-      cout << "Quick Move 用时: " << (game.o ? player1.move_time : player0.move_time) << endl;
-    }
-
-    // 判断人类是否输入的 (x, y) 不合法, 输入不合法 (x, y) 默认为停一手
-    if (res[0] == -1 && res[1] == -1) {
-      game.pass();
-      continue;
-    }
-    // 判断返回的位置按照棋类规则是否能落子 (主要是避免人类错误落子), 不按规则默认停一手。
-    if (game.try_play(res[0], res[1]) != -1) {
-      game.play(res[0], res[1]);
-    } else {
-      cerr << "Error: 不能落在这里" << endl;
-    }
-  }
-  if (display) game.display();
-  return game.end();
+// 在printUsage函数中添加
+void printUsage(const char* programName) {
+    std::cerr << "用法:" << std::endl;
+    std::cerr << "  " << programName << " --selfplay <模型路径>" << std::endl;
+    std::cerr << "  " << programName << " --evaluation <新模型路径> <旧模型路径> [--output <输出目录>]" << std::endl;
 }
 
-// 对弈 cnt 次, 每次思考时间，搜索数量上限，是否展示棋局
+int main(int argc, char* argv[]) {
+    // 检查命令行参数
+    if (argc < 2) {
+        printUsage(argv[0]);
+        return 1;
+    }
 
-void test(int cnt, double time_limit, int search_limit, bool display) {
-  int cnt_mcts = 0, cnt_next = 0;
-  int cnt_draw = 0;
-  for (int i = 1; i <= cnt; i++) {
-    cout << "正在进行第 " << i << " 场对弈" << endl;
+    std::string mode = argv[1];
 
-    MCTS<Chess> player0(time_limit, search_limit);
-    MCTS<Chess> player1(time_limit, search_limit);
+    try {
+        // 自我对弈模式
+        if (mode == "--selfplay") {
+            if (argc != 3) {
+                std::cerr << "错误: 自我对弈模式需要指定模型路径" << std::endl;
+                printUsage(argv[0]);
+                return 1;
+            }
 
-    int res = play_once(player1, player0, display);
-    if (res == 2) cout << "和棋" << endl, cnt_draw++;
-    if (res == 1) cout << "player0 执黑胜" << endl, cnt_next++;
-    if (res == 0) cout << "player1 执白胜" << endl, cnt_mcts++;
+            std::string modelPath = argv[2];
+            
+            // 检查模型路径是否存在
+            if (!std::filesystem::exists(modelPath)) {
+                std::cerr << "错误: 模型文件不存在: " << modelPath << std::endl;
+                return 1;
+            }
+            
+            // 打印基本信息
+            std::cout << "BetaZero - 自我对弈程序" << std::endl;
+            std::cout << "正在加载模型: " << modelPath << std::endl;
+            
+            // 配置自我对弈参数
+            SelfPlay<Othello>::SelfPlayConfig config;
+            config.numGames = 256;        // 对弈局数
+            config.numSimulations = 1000; // 每步MCTS模拟次数
+            config.outputDir = "./data";  // 数据输出目录
+            config.useDataAugmentation = true; // 是否使用数据增强
+            
+            // 创建自我对弈实例
+            SelfPlay<Othello> selfPlay(modelPath, config);
+            
+            // 开始自我对弈
+            std::cout << "开始自我对弈，将生成 " << config.numGames << " 局对弈数据..." << std::endl;
+            selfPlay.run();
+            
+            // 保存生成的训练数据
+            selfPlay.saveData();
+            
+            std::cout << "自我对弈已完成。" << std::endl;
+        }
+        // 模型评估模式
+        else if (mode == "--evaluation") {
+            if (argc < 4) {
+                std::cerr << "错误: 评估模式需要指定新旧两个模型路径" << std::endl;
+                printUsage(argv[0]);
+                return 1;
+            }
+        
+            std::string newModelPath = argv[2];
+            std::string oldModelPath = argv[3];
 
-    res = play_once(player0, player1, display);
-    if (res == 2) cout << "和棋" << endl, cnt_draw++;
-    if (res == 1) cout << "player1 执黑胜" << endl, cnt_mcts++;
-    if (res == 0) cout << "player0 执白胜" << endl, cnt_next++;
-  }
-  cout << "mcts:mcts_next = " << cnt_mcts << ":" << cnt_next << endl;
-}
+            // 检查模型路径是否存在
+            if (!std::filesystem::exists(newModelPath)) {
+                std::cerr << "错误: 新模型文件不存在: " << newModelPath << std::endl;
+                return 1;
+            }
 
-int main() {
+            if (!std::filesystem::exists(oldModelPath)) {
+                std::cerr << "错误: 旧模型文件不存在: " << oldModelPath << std::endl;
+                return 1;
+            }
 
+            // 打印基本信息
+            std::cout << "BetaZero - 模型评估程序" << std::endl;
+            std::cout << "正在加载新模型: " << newModelPath << std::endl;
+            std::cout << "正在加载旧模型: " << oldModelPath << std::endl;
 
-  MCTS<Chess> bench(1, 100000);
-  cout << bench.benchmark() << endl;
+            // 配置评估参数
+            ModelEvaluator<Othello>::EvaluationConfig config;
 
-  test(1, 1, 100000, true);
+            // 检查是否提供了输出目录参数
+            for (int i = 4; i < argc; i++) {
+                std::string arg = argv[i];
+                if (arg == "--output" && i + 1 < argc) {
+                    config.outputDir = argv[i+1];
+                    i++; // 跳过下一个参数
+                }
+            }
 
-  return 0;
+            // 创建评估器实例
+            ModelEvaluator<Othello> evaluator(newModelPath, oldModelPath, config);
 
-
-
-  return 0;
+            // 开始评估
+            std::cout << "开始模型评估..." << std::endl;
+            auto result = evaluator.evaluate();
+        }
+        else {
+            std::cerr << "错误: 未知模式 " << mode << std::endl;
+            printUsage(argv[0]);
+            return 1;
+        }
+        
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "错误: " << e.what() << std::endl;
+        return 1;
+    }
 }

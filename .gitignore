@@ -1,6 +1,6 @@
-/cmake-build-release/
-/cmake-build-debug/
-/.idea/
-/venv/
 /build/
 /python/__pycache__/
+/.conda/
+/bin/
+/data/
+/.vscode/
