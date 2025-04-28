@@ -1,6 +1,9 @@
 /build/
-/python/__pycache__/
+/py/__pycache__/
 /.conda/
+/.vscode/
 /bin/
 /data/
-/.vscode/
+/images/
+/logs/
+/models/

@@ -14,6 +14,7 @@ public:
     // 同时也传递给了基类
     // 因为使用了uint64_t存储棋盘，所以棋盘大小必须是小于等于8， 实际上只能是 6 或者 8
     static constexpr int BOARD_SIZE = 8; 
+    static constexpr int CHANNEL_SIZE = 3;
 
     Othello();    
 
@@ -26,7 +27,7 @@ public:
     int getCurrentPlayer() const override;
     
     uint64_t getHash() const override;
-    std::vector<float> toTensor() const override;
+    std::vector<float> toTensor() override;
 
     void printBoard() const override;
     std::string getBoardString() const override;
@@ -343,7 +344,7 @@ uint64_t Othello::getHash() const {
 }
 
 // 三层结构，第一层黑子位置，第二层白子位置, 第三层当前玩家
-std::vector<float> Othello::toTensor() const {
+std::vector<float> Othello::toTensor() {
     int boardArea = BOARD_SIZE * BOARD_SIZE; 
     // 三个通道，每个通道8*8
     std::vector<float> tensor(3 * boardArea, 0.0f);

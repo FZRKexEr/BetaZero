@@ -40,9 +40,6 @@ public:
     // 保存数据到文件
     bool saveToFile(const std::string& filename) const;
 
-    // 从文件加载数据
-    bool loadFromFile(const std::string& filename);
-
     // 获取样本数量
     size_t size() const { return samples.size(); }
 
@@ -58,7 +55,7 @@ private:
 
     // 棋盘大小和输入通道数
     static constexpr int BOARD_SIZE = GameType::BOARD_SIZE;
-    static constexpr int INPUT_CHANNELS = 3; // input channels 都是三
+    static constexpr int INPUT_CHANNELS = GameType::CHANNEL_SIZE; // 输入通道数
 
     // 将棋盘状态进行旋转和翻转变换
     std::vector<float> rotateState(const std::vector<float>& state, int rotationType) const;
@@ -256,47 +253,4 @@ bool TrainingData<GameType>::saveToFile(const std::string& filename) const {
 
     return true;
 }
-
-template<typename GameType>
-bool TrainingData<GameType>::loadFromFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::binary);
-    if (!file.is_open()) {
-        return false;
-    }
-
-    // 清空当前数据
-    samples.clear();
-
-    // 读取样本数量
-    uint32_t numSamples;
-    file.read(reinterpret_cast<char*>(&numSamples), sizeof(numSamples));
-
-    // 读取格式信息
-    uint32_t stateSize, policySize;
-    file.read(reinterpret_cast<char*>(&stateSize), sizeof(stateSize));
-    file.read(reinterpret_cast<char*>(&policySize), sizeof(policySize));
-
-    // 读取每个样本
-    for (uint32_t i = 0; i < numSamples; ++i) {
-        Sample sample;
-
-        // 读取状态向量
-        sample.state.resize(stateSize);
-        for (uint32_t j = 0; j < stateSize; ++j) {
-            file.read(reinterpret_cast<char*>(&sample.state[j]), sizeof(float));
-        }
-
-        // 读取策略向量
-        sample.policy.resize(policySize);
-        for (uint32_t j = 0; j < policySize; ++j) {
-            file.read(reinterpret_cast<char*>(&sample.policy[j]), sizeof(float));
-        }
-
-        // 读取价值
-        file.read(reinterpret_cast<char*>(&sample.value), sizeof(float));
-
-        samples.push_back(sample);
-    }
-
-    return true;
-} 
+ 

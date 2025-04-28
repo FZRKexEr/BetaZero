@@ -27,7 +27,7 @@ public:
     
     // 用于MCTS和神经网络
     virtual uint64_t getHash() const = 0;  // 获取当前棋盘状态的哈希值
-    virtual std::vector<float> toTensor() const = 0;  // 转换为神经网络输入格式
+    virtual std::vector<float> toTensor() = 0;  // 转换为神经网络输入格式
     
     // 调试和展示
     virtual void printBoard() const = 0;  // 打印当前棋盘状态

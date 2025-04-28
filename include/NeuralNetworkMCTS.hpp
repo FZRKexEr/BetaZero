@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MCTS.hpp"
-#include "NeuralNetwork.hpp"
 #include <memory>
 #include <array>
 
@@ -93,10 +92,11 @@ protected:
         
         auto& priors = it->second;
         auto validMoves = game.getValidMoves();
+        if (validMoves.size() == 0) return;
         
         // 生成Dirichlet噪声
         std::vector<float> noise(validMoves.size());
-        float alpha = 0.3f; // 黑白棋推荐参数
+        float alpha = 0.03f * GameType::BOARD_SIZE * GameType::BOARD_SIZE / validMoves.size(); 
         
         std::random_device rd;
         std::mt19937 gen(rd());

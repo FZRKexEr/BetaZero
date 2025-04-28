@@ -149,9 +149,9 @@ void BatchNeuralNetwork::processBatches() {
             assert((int)request_queue.size() == active_threads.load());
 
             // 如果已经满足条件，说明 active_threads 此时不会变
-            batch.reserve(active_threads.load());
+            batch.reserve(request_queue.size());
             
-            int batch_to_process = active_threads.load();
+            int batch_to_process = request_queue.size();
 
             for (size_t i = 0; i < batch_to_process; ++i) {
                 batch.push_back(std::move(request_queue.front()));

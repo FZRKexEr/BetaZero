@@ -41,7 +41,7 @@ public:
         network = std::make_shared<BatchNeuralNetwork>(
             modelPath, 
             GameType::BOARD_SIZE,
-            3,
+            GameType::CHANNEL_SIZE,
             true,
             config.numGames
         );
@@ -116,7 +116,6 @@ public:
         bool success = trainingData.saveToFile(outputFilename);
         if (success) {
             std::cout << "训练数据已保存到: " << outputFilename << std::endl;
-            std::cout << "样本数量: " << trainingData.size() << std::endl;
         } else {
             std::cerr << "保存训练数据失败！" << std::endl;
         }
@@ -188,6 +187,8 @@ private:
         // 计算开局随机落子步数r，服从均值为0.04*b²的指数分布
         std::exponential_distribution<float> exp_dist(1.0f / (0.04f * boardSize * boardSize));
         int randomMoveCount = std::round(exp_dist(rng));
+
+        randomMoveCount = 0; // 不进行开局探索
         
         // 初始温度为0.8，最终温度为0.2
         float initialTemp = 0.8f;
